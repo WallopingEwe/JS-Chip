@@ -1,4 +1,4 @@
-# JS-Chip
+# JS-Chip ![License](https://img.shields.io/badge/license-MIT-blue)
 
 # Installation
 The **DLL** is only needed for the server.
