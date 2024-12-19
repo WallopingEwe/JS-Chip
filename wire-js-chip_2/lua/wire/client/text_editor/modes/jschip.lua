@@ -4,7 +4,7 @@ local string_gsub = string.gsub
 local draw_WordBox = draw.WordBox
 
 function JSChip_UploadCode(script, validate)
-  local chunkSize = 65528
+  local chunkSize = 64000
   local chunks = {}
 
   for i = 1, #script, chunkSize do
@@ -67,6 +67,9 @@ hook.Add( "Initialize", "JSChip_Setup_E2Helper", function()
         panel.CostColumn:SetName("Cost")
         panel.CostColumn:SetWidth(40)
       end
+
+      table.insert(helperInst, { [1] = "console.log", [2] = "console", [3] = "...", [4] = "undefined", [5] = "1" })
+      helperDesc["console.log"] = "Print to the console."
 end )
 
 -- CPU hint box
@@ -240,7 +243,11 @@ local stdObjectTable = {
   ["SyntaxError"] = true,
   ["AggregateError"] = true,
   ["EvalError"] = true,
-  ["ReferenceError"] = true
+  ["ReferenceError"] = true,
+  ["Events"] = true,
+  ["Inputs"] = true,
+  ["Outputs"] = true,
+  ["Entity"] = true
 }
 
 function EDITOR:CommentSelection(removecomment)

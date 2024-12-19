@@ -22,8 +22,8 @@ TOOL.ClientConVar = {
 if CLIENT then  ------------------------------------------------------------------------------
   -- Make sure firing animation is displayed clientside
   ------------------------------------------------------------------------------
-  function TOOL:LeftClick()  return false end
-  function TOOL:Reload()     return true end
+  function TOOL:LeftClick()  return true end
+  function TOOL:Reload()     return false end
   function TOOL:RightClick() return false end
 end
 
@@ -50,12 +50,11 @@ if SERVER then
           local completeScript = table.concat(storedChunks)
           scriptChunks[ply] = nil
 
-
-          local err, ctx = JS_CreateContext()
+          local err, ctx = JS_CreateContext(ply)
           if err ~= 0 then
             net.Start("JSChip_ValidateCode")
             net.WriteBool(true, 16)
-            net.WriteString("failed to validate the code")
+            net.WriteString("failed to validate the script")
             net.Send(ply)
           else
             local err, bytecode, length = JS_Compile(ctx, #completeScript, completeScript)
@@ -87,29 +86,53 @@ if SERVER then
           scriptChunks[ply] = nil
 
           local err, bytecode, length = JS_Compile(chip.ctx, #completeScript, completeScript)
+
           if err ~= 0 then
             chip:Error(bytecode)
           else
-            chip.Code = bytecode
-            chip.CodeLength = length
             chip.Run = true
             chip:SetColor(Color(255, 255, 255))
+
+            local err, result = JS_Eval(chip.ctx, length, bytecode)
+            if err ~= 0 then
+              chip:Error(result)
+            end
+
+            chip.script = completeScript
           end
       end
   end)
   
   function TOOL:RightClick(trace)
     net.Start("JSChip_OpenEditor") net.Send(self:GetOwner())
+    return true
   end
   
-  function TOOL:LeftClick_Update()
-    net.Start("JSChip_RequestCode") net.Send(self:GetOwner())
+  function TOOL:LeftClick_Update(trace, ent)
+    local ply = self:GetOwner()
+    local chip = ent or trace.Entity
+    ply.JSChipTarget = chip
+
+    if chip.ctx then
+      JS_FreeContext(chip.ctx)
+    end
+
+    local err, ctx = JS_CreateContext(chip, ply)
+    if err ~= 0 then
+      chip:Error(result)
+      chip:Remove()
+      return
+    end
+
+    chip.ctx = ctx
+
+    net.Start("JSChip_RequestCode") net.Send(ply)
   end
 
   function TOOL:MakeEnt(ply, model, Ang, trace)
     local ent = WireLib.MakeWireEnt(ply, {Class = self.WireClass, Pos=trace.HitPos, Angle=Ang, Model=model})
-    ply.JSChipTarget = ent
-    self:LeftClick_Update()
+
+    self:LeftClick_Update(trace, ent)
     return ent
   end
 
@@ -157,6 +180,6 @@ function TOOL.BuildCPanel(panel)
   local OpenEditor = vgui.Create("DButton", panel)
   panel:AddPanel(OpenEditor)
   OpenEditor:SetText("Open Editor")
-  OpenEditor.DoClick = JSChip_OpenEditor()
+  OpenEditor.DoClick = JSChip_OpenEditor
 
 end
