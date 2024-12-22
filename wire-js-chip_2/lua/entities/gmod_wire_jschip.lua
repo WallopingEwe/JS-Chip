@@ -6,18 +6,6 @@ ENT.WireDebugName	= "JSCHIP"
 
 if CLIENT then return end
 
-require("javascript");
-
-JSChatPrint = function(ply, ...)
-	if CurTime() < (ply.JSCanPrint or 0) then return end
-	
-	net.Start("WireExpression2_BetterChatPrint")
-	net.WriteString(string.sub(table.concat({ ... }, "\t"), 1, 64000))
-	net.Send(ply)
-
-	ply.JSCanPrint = CurTime() + 0.2
-end
-
 function ENT:Initialize()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -89,7 +77,45 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
     self.ctx = ctx
 end
 
+function ENT:SetInputs(inputTable)
+	local names = {}
+	local types = {}
+
+	for key, value in pairs(inputTable) do
+		table.insert(names, key)
+		table.insert(types, string.upper(value))
+	end
+
+	self.Inputs = WireLib.AdjustSpecialInputs(self, names, types)
+end
+
+function ENT:SetOutputs(outputTable)
+	local names = {}
+	local types = {}
+
+	for key, value in pairs(outputTable) do
+		table.insert(names, key)
+		table.insert(types, string.upper(value))
+	end
+
+	self.Outputs = WireLib.AdjustSpecialOutputs(self, names, types)
+end
+
+function ENT:TriggerOutput(iname, value)
+	WireLib.TriggerOutput(self, iname, value)
+end
+
+function ENT:OutputType(iname)
+	return (self.Outputs[iname] and self.Outputs[iname].Type) or "none"
+end
+
 function ENT:TriggerInput(iname, value)
+	if self.Run then
+		local err, result = JS_EmitEvent(self.ctx, "input", iname, value)
+		if err ~= 0 then
+			self:Error(result)
+		end
+	end
 end
 
 duplicator.RegisterEntityClass("gmod_wire_jschip", WireLib.MakeWireEnt, "Data")
