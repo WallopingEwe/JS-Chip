@@ -440,7 +440,7 @@ struct JSContext {
     uint64_t random_state;
 
     uint64_t op_count;
-    uint64_t op_limit; 
+    uint64_t op_limit;
 #ifdef CONFIG_BIGNUM
     bf_context_t *bf_ctx;   /* points to rt->bf_ctx, shared by all contexts */
     JSFloatEnv fp_env; /* global FP environment */
@@ -2137,7 +2137,7 @@ JSContext *JS_NewContextRaw(JSRuntime *rt)
     list_add_tail(&ctx->link, &rt->context_list);
 
     ctx->op_count = 0;
-    ctx->op_limit = 10000;
+    ctx->op_limit = 25000;
 #ifdef CONFIG_BIGNUM
     ctx->bf_ctx = &rt->bf_ctx;
     ctx->fp_env.prec = 113;
