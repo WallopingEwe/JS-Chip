@@ -80,8 +80,6 @@ end
 net.Receive("JSChip_OpenEditor", JSChip_OpenEditor)
 
 function TOOL.BuildCPanel(panel)
-  local Button = vgui.Create("DButton" , panel)
-  panel:AddPanel(Button)
 
   ----------------------------------------------------------------------------
   local currentDirectory
