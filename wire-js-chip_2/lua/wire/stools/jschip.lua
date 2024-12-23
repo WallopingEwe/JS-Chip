@@ -29,9 +29,7 @@ end
 
 
 if SERVER then
-  util.AddNetworkString("JSChip_RequestCode")
   util.AddNetworkString("JSChip_OpenEditor")
-  util.AddNetworkString("JSChip_ValidateCode")
   
   function TOOL:RightClick(trace)
     net.Start("JSChip_OpenEditor") net.Send(self:GetOwner())

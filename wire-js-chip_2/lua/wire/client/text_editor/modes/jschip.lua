@@ -27,8 +27,19 @@ hook.Add( "Initialize", "JSChip_Setup_E2Helper", function()
         panel.CostColumn:SetWidth(40)
       end
 
-      table.insert(helperInst, { [1] = "console.log", [2] = "console", [3] = "...", [4] = "undefined", [5] = "1" })
-      helperDesc["console.log"] = "Print to the console."
+      for category, functions in pairs(JSChip_Functions) do
+        for funcName, details in pairs(functions) do
+            table.insert(helperInst, {
+                [1] = funcName,
+                [2] = category,
+                [3] = details.takes,
+                [4] = details.returns,
+                [5] = tostring(details.cost)
+            })
+            helperDesc[funcName] = details.description
+        end
+    end
+      
 end )
 
 -- CPU hint box
