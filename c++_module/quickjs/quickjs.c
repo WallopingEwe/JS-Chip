@@ -16339,10 +16339,18 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 
         SWITCH(pc) {
         CASE(OP_push_i32):
+            if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+            };
+
             *sp++ = JS_NewInt32(ctx, get_u32(pc));
             pc += 4;
             BREAK;
         CASE(OP_push_const):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             *sp++ = JS_DupValue(ctx, b->cpool[get_u32(pc)]);
             pc += 4;
             BREAK;
@@ -16356,29 +16364,57 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
         CASE(OP_push_5):
         CASE(OP_push_6):
         CASE(OP_push_7):
+            if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+            };
+
             *sp++ = JS_NewInt32(ctx, opcode - OP_push_0);
             BREAK;
         CASE(OP_push_i8):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             *sp++ = JS_NewInt32(ctx, get_i8(pc));
             pc += 1;
             BREAK;
         CASE(OP_push_i16):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             *sp++ = JS_NewInt32(ctx, get_i16(pc));
             pc += 2;
             BREAK;
         CASE(OP_push_const8):
+            if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+            };
+
             *sp++ = JS_DupValue(ctx, b->cpool[*pc++]);
             BREAK;
         CASE(OP_fclosure8):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             *sp++ = js_closure(ctx, JS_DupValue(ctx, b->cpool[*pc++]), var_refs, sf);
             if (unlikely(JS_IsException(sp[-1])))
                 goto exception;
             BREAK;
         CASE(OP_push_empty_string):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             *sp++ = JS_AtomToString(ctx, JS_ATOM_empty_string);
             BREAK;
         CASE(OP_get_length):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue val;
 
                 val = JS_GetProperty(ctx, sp[-1], JS_ATOM_length);
@@ -16390,13 +16426,25 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
 #endif
         CASE(OP_push_atom_value):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             *sp++ = JS_AtomToValue(ctx, get_u32(pc));
             pc += 4;
             BREAK;
         CASE(OP_undefined):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             *sp++ = JS_UNDEFINED;
             BREAK;
         CASE(OP_null):
+            if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+            };
+
             *sp++ = JS_NULL;
             BREAK;
         CASE(OP_push_this):
@@ -16422,18 +16470,34 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             }
             BREAK;
         CASE(OP_push_false):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             *sp++ = JS_FALSE;
             BREAK;
         CASE(OP_push_true):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             *sp++ = JS_TRUE;
             BREAK;
         CASE(OP_object):
+            if(handle_op_limit(caller_ctx, 2)) {
+                goto exception;
+             };
+
             *sp++ = JS_NewObject(ctx);
             if (unlikely(JS_IsException(sp[-1])))
                 goto exception;
             BREAK;
         CASE(OP_special_object):
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+
                 int arg = *pc++;
                 switch(arg) {
                 case OP_SPECIAL_OBJECT_ARGUMENTS:
@@ -16480,6 +16544,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_rest):
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+
                 int first = get_u16(pc);
                 pc += 2;
                 *sp++ = js_build_rest(ctx, first, argc, (JSValueConst *)argv);
@@ -16644,12 +16712,21 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
         CASE(OP_call1):
         CASE(OP_call2):
         CASE(OP_call3):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
+
             call_argc = opcode - OP_call0;
             goto has_call_argc;
 #endif
         CASE(OP_call):
         CASE(OP_tail_call):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 call_argc = get_u16(pc);
                 pc += 2;
                 goto has_call_argc;
@@ -16670,6 +16747,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_call_constructor):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 call_argc = get_u16(pc);
                 pc += 2;
                 call_argv = sp - call_argc;
@@ -16688,6 +16769,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
         CASE(OP_call_method):
         CASE(OP_tail_call_method):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 call_argc = get_u16(pc);
                 pc += 2;
                 call_argv = sp - call_argc;
@@ -16706,6 +16791,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_array_from):
             {
+                if(handle_op_limit(caller_ctx, 3)) {
+                    goto exception;
+                };
+
                 int i, ret;
 
                 call_argc = get_u16(pc);
@@ -16730,6 +16819,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 
         CASE(OP_apply):
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+                
                 int magic;
                 magic = get_u16(pc);
                 pc += 2;
@@ -16783,6 +16876,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
             
         CASE(OP_throw):
+            if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+            };
+
             JS_Throw(ctx, *--sp);
             goto exception;
 
@@ -16819,6 +16916,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 
         CASE(OP_eval):
             {
+                if(handle_op_limit(caller_ctx, 10)) {
+                    goto exception;
+                };
+                
                 JSValueConst obj;
                 int scope_idx;
                 call_argc = get_u16(pc);
@@ -16848,6 +16949,11 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             /* could merge with OP_apply */
         CASE(OP_apply_eval):
             {
+                if(handle_op_limit(caller_ctx, 10)) {
+                    goto exception;
+                };
+                
+
                 int scope_idx;
                 uint32_t len;
                 JSValue *tab;
@@ -16881,6 +16987,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 
         CASE(OP_regexp):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 sp[-2] = js_regexp_constructor_internal(ctx, JS_UNDEFINED,
                                                         sp[-2], sp[-1]);
                 sp--;
@@ -17274,17 +17384,29 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
 
         CASE(OP_goto):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             pc += (int32_t)get_u32(pc);
             if (unlikely(js_poll_interrupts(ctx)))
                 goto exception;
             BREAK;
 #if SHORT_OPCODES
         CASE(OP_goto16):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             pc += (int16_t)get_u16(pc);
             if (unlikely(js_poll_interrupts(ctx)))
                 goto exception;
             BREAK;
         CASE(OP_goto8):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             pc += (int8_t)pc[0];
             if (unlikely(js_poll_interrupts(ctx)))
                 goto exception;
@@ -17292,6 +17414,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 #endif
         CASE(OP_if_true):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+            
                 int res;
                 JSValue op1;
 
@@ -17312,6 +17438,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_if_false):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+            
                 int res;
                 JSValue op1;
 
@@ -17333,6 +17463,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 #if SHORT_OPCODES
         CASE(OP_if_true8):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 int res;
                 JSValue op1;
 
@@ -17353,6 +17487,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_if_false8):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 int res;
                 JSValue op1;
 
@@ -17374,6 +17512,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 #endif
         CASE(OP_catch):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 int32_t diff;
                 diff = get_u32(pc);
                 sp[0] = JS_NewCatchOffset(ctx, pc + diff - b->byte_code_buf);
@@ -17534,6 +17676,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 
         CASE(OP_lnot):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+                
                 int res;
                 JSValue op1;
 
@@ -17959,6 +18105,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_add_loc):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue *pv;
                 int idx;
                 idx = *pc;
@@ -18000,6 +18150,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_sub):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue op1, op2;
                 op1 = sp[-2];
                 op2 = sp[-1];
@@ -18021,6 +18175,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_mul):
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+
                 JSValue op1, op2;
                 double d;
                 op1 = sp[-2];
@@ -18063,6 +18221,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_div):
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+
                 JSValue op1, op2;
                 op1 = sp[-2];
                 op2 = sp[-1];
@@ -18084,6 +18246,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
         CASE(OP_math_mod):
 #endif
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+                
                 JSValue op1, op2;
                 op1 = sp[-2];
                 op2 = sp[-1];
@@ -18105,6 +18271,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_pow):
         binary_arith_slow:
+            if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+            };
+
             if (js_binary_arith_slow(ctx, sp, opcode))
                 goto exception;
             sp--;
@@ -18112,6 +18282,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 
         CASE(OP_plus):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue op1;
                 uint32_t tag;
                 op1 = sp[-1];
@@ -18125,6 +18299,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_neg):
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+
                 JSValue op1;
                 uint32_t tag;
                 int val;
@@ -18155,6 +18333,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_inc):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue op1;
                 int val;
                 op1 = sp[-1];
@@ -18172,6 +18354,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_dec):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue op1;
                 int val;
                 op1 = sp[-1];
@@ -18189,12 +18375,20 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_post_inc):
         CASE(OP_post_dec):
+            if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+            };
+
             if (js_post_inc_slow(ctx, sp, opcode))
                 goto exception;
             sp++;
             BREAK;
         CASE(OP_inc_loc):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue op1;
                 int val;
                 int idx;
@@ -18220,6 +18414,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_dec_loc):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue op1;
                 int val;
                 int idx;
@@ -18245,6 +18443,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_not):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue op1;
                 op1 = sp[-1];
                 if (JS_VALUE_GET_TAG(op1) == JS_TAG_INT) {
@@ -18258,6 +18460,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 
         CASE(OP_shl):
             {
+                if(handle_op_limit(caller_ctx, 3)) {
+                    goto exception;
+                };
+
                 JSValue op1, op2;
                 op1 = sp[-2];
                 op2 = sp[-1];
@@ -18295,6 +18501,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_shr):
             {
+                if(handle_op_limit(caller_ctx, 3)) {
+                    goto exception;
+                };
+
                 JSValue op1, op2;
                 op1 = sp[-2];
                 op2 = sp[-1];
@@ -18316,6 +18526,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_sar):
             {
+                if(handle_op_limit(caller_ctx, 3)) {
+                    goto exception;
+                };
+
                 JSValue op1, op2;
                 op1 = sp[-2];
                 op2 = sp[-1];
@@ -18347,6 +18561,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_and):
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+
                 JSValue op1, op2;
                 op1 = sp[-2];
                 op2 = sp[-1];
@@ -18364,6 +18582,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_or):
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+
                 JSValue op1, op2;
                 op1 = sp[-2];
                 op2 = sp[-1];
@@ -18381,6 +18603,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             BREAK;
         CASE(OP_xor):
             {
+                if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+                };
+
                 JSValue op1, op2;
                 op1 = sp[-2];
                 op2 = sp[-1];
@@ -18403,7 +18629,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
                 {                                         \
                 JSValue op1, op2;                         \
                 op1 = sp[-2];                             \
-                op2 = sp[-1];                                   \
+                op2 = sp[-1];                             \
+                if (handle_op_limit(caller_ctx, 1)) {     \
+                    goto exception;                       \
+                }                                         \
                 if (likely(JS_VALUE_IS_BOTH_INT(op1, op2))) {           \
                     sp[-2] = JS_NewBool(ctx, JS_VALUE_GET_INT(op1) binary_op JS_VALUE_GET_INT(op2)); \
                     sp--;                                               \
@@ -18426,23 +18655,39 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
 
 #ifdef CONFIG_BIGNUM
         CASE(OP_mul_pow10):
+            if(handle_op_limit(caller_ctx, 2)) {
+                    goto exception;
+            };
+
             if (rt->bigfloat_ops.mul_pow10(ctx, sp))
                 goto exception;
             sp--;
             BREAK;
 #endif
         CASE(OP_in):
+            if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+            };
+
             if (js_operator_in(ctx, sp))
                 goto exception;
             sp--;
             BREAK;
         CASE(OP_instanceof):
+            if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+            };
+
             if (js_operator_instanceof(ctx, sp))
                 goto exception;
             sp--;
             BREAK;
         CASE(OP_typeof):
             {
+                if(handle_op_limit(caller_ctx, 1)) {
+                    goto exception;
+                };
+
                 JSValue op1;
                 JSAtom atom;
 
@@ -18453,6 +18698,10 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
             }
             BREAK;
         CASE(OP_delete):
+            if(handle_op_limit(caller_ctx, 1)) {
+                goto exception;
+            };
+
             if (js_operator_delete(ctx, sp))
                 goto exception;
             sp--;
