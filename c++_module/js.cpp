@@ -2002,7 +2002,7 @@ JSValue entity_local_to_world(JSContext *ctx, JSValueConst this_val, int argc, J
         return JS_NewBool(ctx, false);
     }
 
-    LUA_CH->GetField(-5, "Vector");
+    LUA_CH->GetField(-3, "Vector");
     LUA_CH->PushNumber(x);
     LUA_CH->PushNumber(y);
     LUA_CH->PushNumber(z);
@@ -2020,7 +2020,7 @@ JSValue entity_local_to_world(JSContext *ctx, JSValueConst this_val, int argc, J
     JS_SetPropertyStr(ctx, JSvec, "y", JS_NewFloat64(ctx, vec.y));
     JS_SetPropertyStr(ctx, JSvec, "z", JS_NewFloat64(ctx, vec.z));
 
-    LUA_CH->Pop(6);
+    LUA_CH->Pop(5);
 
     return JSvec;
 }
@@ -2065,7 +2065,7 @@ JSValue entity_world_to_local(JSContext *ctx, JSValueConst this_val, int argc, J
         return JS_NewBool(ctx, false);
     }
 
-    LUA_CH->GetField(-5, "Vector");
+    LUA_CH->GetField(-3, "Vector");
     LUA_CH->PushNumber(x);
     LUA_CH->PushNumber(y);
     LUA_CH->PushNumber(z);
@@ -2083,7 +2083,7 @@ JSValue entity_world_to_local(JSContext *ctx, JSValueConst this_val, int argc, J
     JS_SetPropertyStr(ctx, JSvec, "y", JS_NewFloat64(ctx, vec.y));
     JS_SetPropertyStr(ctx, JSvec, "z", JS_NewFloat64(ctx, vec.z));
 
-    LUA_CH->Pop(6);
+    LUA_CH->Pop(5);
 
     return JSvec;
 }
