@@ -2654,7 +2654,9 @@ LUA_FUNCTION( lua_eval ) {
     }
 
     //JSValue result = JS_Eval(contexts[context], script, length, "<stdin>", JS_EVAL_TYPE_GLOBAL);
+    
     set_ops(ctx, 0);
+
     JSValue bytecode = JS_ReadObject(ctx, (uint8_t*)script, length, JS_READ_OBJ_BYTECODE);
     JSValue result = JS_EvalFunction(ctx, bytecode);
 
@@ -2691,8 +2693,8 @@ LUA_FUNCTION( lua_get_ops ) {
         return 2;
     }
 
+    LUA->PushNumber(0);
     LUA->PushNumber(get_ops(contexts[context]));
-    LUA->PushNil();
 
     return 2;
 }

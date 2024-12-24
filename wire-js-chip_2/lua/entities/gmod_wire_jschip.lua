@@ -25,6 +25,11 @@ function ENT:Think()
 			self:Error(result)
 		end
 	end
+	
+	local err, ops = JS_GetOps(self.ctx)
+	self:SetOverlayData({
+		txt = "JS Chip\n\nLast Execution:\n" .. ops .. " ops, " .. math.Round((ops / 25000) * 100, 1) .. "%"
+	})
 
 	self:NextThink( CurTime() )
 	return true
