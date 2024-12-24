@@ -16211,6 +16211,18 @@ int handle_op_limit(JSContext* ctx,  int64_t cost) {
     }
 }
 
+int64_t get_ops(JSContext* ctx) {
+    return ctx->op_count;
+}
+
+void set_ops(JSContext* ctx, int64_t ops) {
+    ctx->op_count = ops;
+}
+
+void add_ops(JSContext* ctx, int64_t ops) {
+    ctx->op_count += ops;
+}
+
 /* argv[] is modified if (flags & JS_CALL_FLAG_COPY_ARGV) = 0. */
 static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
                                JSValueConst this_obj, JSValueConst new_target,
@@ -18976,7 +18988,6 @@ static JSValue JS_CallInternal(JSContext *caller_ctx, JSValueConst func_obj,
         }
     }
     rt->current_stack_frame = sf->prev_frame;
-    ctx->op_count = 0;
     return ret_val;
 }
 

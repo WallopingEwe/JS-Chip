@@ -766,7 +766,9 @@ int JS_GetOwnPropertyNames(JSContext *ctx, JSPropertyEnum **ptab,
                            uint32_t *plen, JSValueConst obj, int flags);
 int JS_GetOwnProperty(JSContext *ctx, JSPropertyDescriptor *desc,
                       JSValueConst obj, JSAtom prop);
-
+void set_ops(JSContext* ctx, int64_t ops);
+void add_ops(JSContext* ctx, int64_t ops);
+int64_t get_ops(JSContext* ctx);
 JSValue JS_Call(JSContext *ctx, JSValueConst func_obj, JSValueConst this_obj,
                 int argc, JSValueConst *argv);
 JSValue JS_Invoke(JSContext *ctx, JSValueConst this_val, JSAtom atom,
