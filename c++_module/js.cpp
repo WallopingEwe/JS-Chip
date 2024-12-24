@@ -2423,7 +2423,7 @@ LUA_FUNCTION( lua_emit_event ) {
                 }
             }
 
-
+            set_ops(ctx, 0);
             JSValue result = JS_Call(ctx, callback, JS_UNDEFINED, lua_args - 2, args);
 
             if(JS_IsException(result)) {
@@ -2654,6 +2654,7 @@ LUA_FUNCTION( lua_eval ) {
     }
 
     //JSValue result = JS_Eval(contexts[context], script, length, "<stdin>", JS_EVAL_TYPE_GLOBAL);
+    set_ops(ctx, 0);
     JSValue bytecode = JS_ReadObject(ctx, (uint8_t*)script, length, JS_READ_OBJ_BYTECODE);
     JSValue result = JS_EvalFunction(ctx, bytecode);
 
@@ -2676,6 +2677,23 @@ LUA_FUNCTION( lua_eval ) {
     }
 
     JS_FreeValue(ctx, result);
+    return 2;
+}
+
+LUA_FUNCTION( lua_get_ops ) {
+    LUA->CheckType(1, GarrysMod::Lua::Type::Number);
+
+    size_t context = LUA->GetNumber(1);
+
+    if(context > MAX_CONTEXTS || context < 0 || contexts[context] == nullptr) {
+        LUA->PushNumber(1);
+        LUA->PushString("Couldn't find that context!");
+        return 2;
+    }
+
+    LUA->PushNumber(get_ops(contexts[context]));
+    LUA->PushNil();
+
     return 2;
 }
 
@@ -2773,6 +2791,9 @@ GMOD_MODULE_OPEN() {
 
           LUA->PushCFunction(lua_emit_event);
           LUA->SetField(-2, "JS_EmitEvent");
+
+          LUA->PushCFunction(lua_get_ops);
+          LUA->SetField(-2, "JS_GetOps");
      LUA->Pop();
 
     lua_printf("Opened JS module...");
